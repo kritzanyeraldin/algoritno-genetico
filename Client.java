@@ -50,7 +50,7 @@ public class Client {
 
     static public void create() throws IOException {
         Client client = new Client();
-        boolean clientConnected = client.startConnection("127.0.0.1", 4444);
+        boolean clientConnected = client.startConnection("192.168.1.14", 4444);
 
         if (!clientConnected) {
             Utils.clientLogger("Error al conectarse al servidor");
