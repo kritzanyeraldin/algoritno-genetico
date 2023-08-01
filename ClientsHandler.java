@@ -1,5 +1,3 @@
-package concurrent;
-
 import java.io.IOException;
 
 public class ClientsHandler {

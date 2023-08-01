@@ -1,5 +1,3 @@
-package concurrent;
-
 public class Individual {
     double x;
     double y;
