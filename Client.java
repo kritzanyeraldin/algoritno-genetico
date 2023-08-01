@@ -50,7 +50,7 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    static public void create() throws IOException {
         Client client = new Client();
         boolean clientConnected = client.startConnection("127.0.0.1", 4444);
 
@@ -62,17 +62,26 @@ public class Client {
         Utils.clientLogger("Se conectó al servidor correctamente");
 
 
-        for(int i=0; i<Utils.NUM_GENERACIONES;i++) {
+        for (int i = 0; i < Utils.NUM_GENERACIONES; i++) {
             Utils.clientLogger("Esperando la población");
             String populationAsString = client.receiveMessage();
-
             Utils.serverLogger(populationAsString);
-            List<Individual> population = Utils.stringToPopulation(populationAsString);
-            population = Utils.realizarCruzamiento(population);
-            populationAsString = Utils.populationToString(population);
+            Utils.clientLogger(populationAsString);
 
+
+            List<Individual> population = Utils.stringToPopulation(populationAsString);
+            Utils.evaluarPoblacion(population);
+            Utils.seleccionarMejores(population);
+            population = Utils.realizarCruzamiento(population);
+            Utils.realizarMutacion(population);
+            populationAsString = Utils.populationToString(population);
+            System.out.println("Enviando...");
             Utils.clientLogger(populationAsString);
             client.sendMessage(populationAsString);
         }
+    }
+
+    public static void main(String[] args) throws IOException {
+        create();
     }
 }

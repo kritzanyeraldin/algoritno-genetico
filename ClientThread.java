@@ -1,8 +1,5 @@
 package concurrent;
 
-import concurrent.Server;
-import concurrent.Utils;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,10 +11,17 @@ class ClientThread extends Thread {
     private final Socket clientSocket;
     private final Server server;
 
-    public ClientThread(Socket socket, int id, Server server) {
+    private String message;
+
+    public ClientThread(Socket socket, int id, Server server, String message) {
         clientSocket = socket;
         this.id = id;
         this.server = server;
+        this.message = message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     @Override
@@ -27,21 +31,20 @@ class ClientThread extends Thread {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
 
-
             //manda al cliente
-            out.println(server.getCurrentPopulation());
+            out.println(message);
 
             //lee mensaje de cliente
             String incomingPopulation = in.readLine();
 
             if (incomingPopulation != null) {
                 Utils.clientLogger(id, incomingPopulation);
-                server.setCurrentPopulation(incomingPopulation);
+                server.addPopulation(incomingPopulation);
+                // server.setCurrentPopulation(incomingPopulation);
             }
 
-
-
-
+            server.processBestPopulation();
+            setMessage(incomingPopulation);
 
 //            while ((incomingPopulation = in.readLine()) != null) {
 //                Utils.clientLogger(id, incomingPopulation);

@@ -22,10 +22,18 @@ public class Server {
 
     public void processBestPopulation() {
         // Obtenemos la mejor población en base a su score promedio
-        this.currentPopulation = this.populations.get(0);
+        List<List<Individual>> p = new ArrayList<>();
+
+        for (String population :
+                populations) {
+            p.add(Utils.stringToPopulation(population));
+        }
+
+        List<Individual> bestPopulation = Utils.obtenerMejorPoblacion(p);
+        setCurrentPopulation(Utils.populationToString(bestPopulation));
 
         // Limpiamos las poblaciones para la próxima iteración
-//      this.populations.clear();
+        this.populations.clear();
     }
 
     public void addPopulation(String population) {
@@ -44,10 +52,9 @@ public class Server {
         serverSocket.close();
     }
 
-    private void start(int port) {
+    private void start(int port, int clientsSize) {
 
         try {
-            int clientsSize = 1;
             serverSocket = new ServerSocket(port);
             Utils.serverLogger("Corriendo en el puerto " + port);
 
@@ -55,16 +62,20 @@ public class Server {
                 Socket clientSocket = serverSocket.accept();
 
                 int clientIndex = clients.size();
-                ClientThread clientThread = new ClientThread(clientSocket, clientIndex, this);
+                ClientThread clientThread = new ClientThread(clientSocket, clientIndex, this, currentPopulation);
                 clients.add(clientThread);
 
                 Utils.serverLogger("Nuevo cliente conectado (clientes conectados: " + (clientIndex + 1) + ")");
 
                 if (clientsSize - 1 == clientIndex) break;
             }
-            int cycleCount = 0;
-            while (cycleCount < Utils.NUM_GENERACIONES) {
-                Utils.serverLogger("Mandando población inicial: " + currentPopulation);
+            int generation = 0;
+
+            long startTime=System.currentTimeMillis();
+            while (generation < Utils.NUM_GENERACIONES) {
+                System.out.println();
+                System.out.println("Generación número " + generation);
+                Utils.serverLogger("Mandando población: " + currentPopulation);
 
                 // Inicia el ciclo de comunicación con los clientes
                 for (ClientThread client : clients) {
@@ -76,19 +87,19 @@ public class Server {
                     client.join();
                 }
 
-                // Elegir los mejores y actualizar la población actual
-                //processBestPopulation();
-
-                cycleCount++;
+                generation++;
             }
+            long endTime = System.currentTimeMillis();
+            double elapsedTimeSeconds = (endTime - startTime) / 1000.0;
 
-
-            // Elegir los mejores y lo actualiza
-//        for (ClientThread client:
-//                clients) {
-//          String population = client.getPopulation();
-//          client.setPopulation(population);
-//        }
+            List<Individual> p = Utils.stringToPopulation(currentPopulation);
+            Individual mejorIndividuo = Utils.obtenerMejorIndividuo(p);
+            System.out.println();
+            System.out.println("El mejor individuo encontrado es:");
+            System.out.println("x = " + mejorIndividuo.x);
+            System.out.println("y = " + mejorIndividuo.y);
+            System.out.println("Valor de la función: " + Utils.funcion(mejorIndividuo.x, mejorIndividuo.y));
+            System.out.println("Tiempo final:"+ elapsedTimeSeconds);
         } catch (IOException e) {
             Utils.serverLogger("Error al iniciar el servidor: " + e.getMessage());
         } catch (InterruptedException e) {
@@ -97,6 +108,6 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        new Server().start(4444);
+        new Server().start(4444, 2);
     }
 }

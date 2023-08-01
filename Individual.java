@@ -9,4 +9,9 @@ public class Individual {
         this.x = x;
         this.y = y;
     }
+
+    public void print() {
+        System.out.println(x);
+        System.out.println(y);
+    }
 }
